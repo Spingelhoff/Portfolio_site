@@ -154,7 +154,7 @@ params:
           url: "https://example.com"
         info:
           enable: false
-        content: "I formed unique cirriculum for each client and work with them to achieve their academic goals."
+        content: "I formed unique cirricula for each client and worked with them to achieve their academic goals."
 
       - job: "Teaching Assistant"
         company: "University of Toronto"
