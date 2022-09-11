@@ -53,9 +53,9 @@ params:
     disableThemeToggle: false
     # defaultTheme: "light" # dark
 
-  # font:
-  #   fontSize: 1.5rem # default: 1rem
-  #   fontWeight: 500 # default: 400
+  font:
+    fontSize: 1.1rem # default: 1rem
+    fontWeight: 400 # default: 400
   #   lineHeight: 1 # default: 1.5
   #   textAlign: right # default: left
 
@@ -114,7 +114,7 @@ params:
   about:
     enable: true
     title: "About Me"
-    image: "/images/ProfilePic.jpg"
+    image: "/images/AboutPic.jpg"
     content: |-
       I am a data enthusiast who always enjoys an opportunity to improve my analytical skills. My background is in cell and systems biology which gave me a passion for learning and a need to find answers to novel questions.
 
