@@ -231,7 +231,7 @@ params:
             url: https://github.com/Spingelhoff/WTO_Export_Map
 
       - title: Thesis Reimagined - Heatmap of Literature Review
-        content: To improve on a past figure, I created an interactive heatmap outlining the results of a literature review for mutants displaying a somatic or germlinet transgene silencing phenotype in C. elegans.
+        content: To improve on a past figure, I created an interactive heatmap outlining the results of a literature review for mutants displaying a somatic or germline transgene silencing phenotype in C. elegans.
         image: /images/projects/THESIS_Heatmap.png
         links:
           - icon: fab fa-github
