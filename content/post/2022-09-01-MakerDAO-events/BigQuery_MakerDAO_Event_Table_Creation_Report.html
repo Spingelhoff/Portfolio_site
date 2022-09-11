@@ -1,0 +1,319 @@
+---
+title: "Network Mapping the Most Influential Addresses using DAI (2021): Extracting Blockchain Data from Public Google Datasets with BigQuery and SQL"
+author: "Victor Lao"
+date: 2022-08-30
+output: 
+  blogdown::html_page:
+    toc: TRUE
+---
+
+
+<div id="TOC">
+<ul>
+<li><a href="#introduction" id="toc-introduction">Introduction</a></li>
+<li><a href="#methodology" id="toc-methodology">Methodology</a></li>
+<li><a href="#references" id="toc-references">References</a></li>
+</ul>
+</div>
+
+<div id="introduction" class="section level2">
+<h2>Introduction</h2>
+<p>Blockchain technologies are inarguably reshaping how the general public thinks
+of finance. One particularly interesting innovation is the concept of
+decentralized autonomous organizations (or DAOs). Leveraging the transparency of
+the blockchain, DAOs endeavour to collaboratively run organizations in a
+trustless way. This novel method of conducting corporate operations makes a
+compelling subject for analysis.</p>
+<p>One prominent DAO is MakerDAO. They are most well known for their
+over-collateralized USD stable coin, DAI. As all core MakerDAO operations and
+products operate through the blockchain, I retrieved all emitted event logs
+pertaining to MakerDAO smart contracts (executes blockchain functions) using
+BigQuery and the MakerDAO technical docs.</p>
+</div>
+<div id="methodology" class="section level2">
+<h2>Methodology</h2>
+<p>Table of MakerDAO events was created using the publicly available Ethereum
+blockchain dataset on BigQuery. As addresses are stored on the blockchain as
+a 42 character hexadecimal, all smart contract addresses were converted to their
+contract name using MakerDAO technical docs. Topic 0 of event logs typically
+contains a unqiue event type specific index and was used to annotate function
+events. Each unique event type was individually parsed for sender identity,
+reciever identity and value. Makerdao stores values as integers which stand for
+differing decimals of percision depending on the event type. An unfortunate
+side effect of this storage method is that the values are too large for BigQuery
+to handle (can only go up to INT64). This necessitated using R to view the
+correct values. Values were stored on BigQuery as hexadecimals.</p>
+<pre class="sql"><code>CREATE TABLE 
+     makerdao_operations.may2021to2022
+PARTITION BY DATE (
+     block_timestamp
+)
+CLUSTER BY
+     makerdao_smartcontract,
+     makerdao_function
+AS (
+
+SELECT
+     logs.block_timestamp AS block_timestamp,
+     transaction_hash,
+     from_address,
+     to_address,
+     value AS eth_value,
+     gas_price,
+     CASE
+          WHEN address = &#39;0x6b175474e89094c44da98b954eedeac495271d0f&#39; THEN &#39;DAI&#39;
+          WHEN address = &#39;0x9759A6Ac90977b93B58547b4A71c78317f391A28&#39; THEN &#39;DAIJOIN&#39;
+          WHEN address = &#39;0x2F0b23f53734252Bda2277357e97e1517d6B042A&#39; THEN &#39;GEMJOIN&#39;
+          WHEN address = &#39;0x197E90f9FAD81970bA7976f33CbD77088E5D7cf7&#39; THEN &#39;POT&#39;
+          WHEN address = &#39;0x19c0976f590D67707E62397C87829d896Dc0f1F1&#39; THEN &#39;JUG&#39;
+          WHEN address = &#39;0xA950524441892A31ebddF91d3cEEFa04Bf454466&#39; THEN &#39;VOW&#39;
+          WHEN address = &#39;0xC4269cC7acDEdC3794b221aA4D9205F564e27f0d&#39; THEN &#39;FLAPPER&#39;
+          WHEN address = &#39;0xA41B6EF151E06da0e34B009B86E828308986736D&#39; THEN &#39;FLOPPER&#39;
+          WHEN address = &#39;0x35D1b3F3D7966A1DFe207aa4514C12a259A0492B&#39; THEN &#39;VAT&#39;
+          WHEN address = &#39;0x65C79fcB50Ca1594B025960e539eD7A9a6D434A3&#39; THEN &#39;SPOT&#39;
+          WHEN address = &#39;0x135954d155898D42C90D2a57824C690e0c7BEf1B&#39; THEN &#39;DOG&#39;
+          WHEN address = &#39;0xc67963a226eddd77B91aD8c421630A1b0AdFF270&#39; THEN &#39;CLIPPER&#39;
+          WHEN address = &#39;0x1EB4CF3A948E7D72A198fe073cCb8C7a948cD853&#39; THEN &#39;FLASH&#39;
+          WHEN address = &#39;0x9f8F72aA9304c8B593d555F12eF6589cC3A579A2&#39; THEN &#39;MKR&#39;
+          WHEN address = &#39;0x0a3f6849f78076aefaDf113F5BED87720274dDC0&#39; THEN &#39;DSCHIEF&#39;
+          WHEN address = &#39;0xA618E54de493ec29432EbD2CA7f14eFbF6Ac17F7&#39; THEN &#39;DSTOKEN&#39;
+          WHEN address = &#39;0x82ecD135Dce65Fbc6DbdD0e4237E0AF93FFD5038&#39; THEN &#39;PROXY&#39;
+          WHEN address = &#39;0x5ef30b9986345249bc32d8928B7ee64DE9435E39&#39; THEN &#39;CDPMANAGER&#39;
+               END AS makerdao_smartcontract,
+     CASE
+          WHEN topics[OFFSET(0)] = &#39;0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef&#39; AND
+               topics[OFFSET(1)] NOT IN (
+                                        &#39;0x0000000000000000000000000000000000000000&#39;,
+                                        &#39;0x2F0b23f53734252Bda2277357e97e1517d6B042A&#39;,
+                                        &#39;0x0a3f6849f78076aefadf113f5bed87720274ddc0&#39;
+                                        )                                                               AND
+               topics[OFFSET(2)] NOT IN (&#39;0x0000000000000000000000000000000000000000&#39;,
+                                        &#39;0x2F0b23f53734252Bda2277357e97e1517d6B042A&#39;,
+                                        &#39;0x0a3f6849f78076aefadf113f5bed87720274ddc0&#39;
+                                        )                                                               THEN &#39;transfer&#39; --DAI/MKR/IOU
+          WHEN topics[OFFSET(0)] = &#39;0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925&#39; THEN &#39;approve&#39; --DAI/MKR/IOU
+          WHEN topics[OFFSET(0)] = &#39;0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef&#39; AND
+               topics[OFFSET(1)] = &#39;0x0000000000000000000000000000000000000000&#39;                         THEN &#39;mint/exit&#39; --DAIJOIN
+          WHEN topics[OFFSET(0)] = &#39;0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef&#39; AND
+               topics[OFFSET(2)] = &#39;0x0000000000000000000000000000000000000000&#39;                         THEN &#39;burn/join&#39; --DAIJOIN
+          WHEN topics[OFFSET(0)] = &#39;0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef&#39; AND
+               topics[OFFSET(1)] = &#39;0x2F0b23f53734252Bda2277357e97e1517d6B042A&#39;                         THEN &#39;mint/exit&#39; --GEMJOIN
+          WHEN topics[OFFSET(0)] = &#39;0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef&#39; AND
+               topics[OFFSET(2)] = &#39;0x2F0b23f53734252Bda2277357e97e1517d6B042A&#39;                         THEN &#39;burn/join&#39; --GEMJOIN
+          WHEN topics[OFFSET(0)] = &#39;0x9f678cca00000000000000000000000000000000000000000000000000000000&#39; THEN &#39;drip&#39; --POT
+          WHEN topics[OFFSET(0)] = &#39;0x7f8661a100000000000000000000000000000000000000000000000000000000&#39; THEN &#39;exit&#39; --POT
+          WHEN topics[OFFSET(0)] = &#39;0x049878f300000000000000000000000000000000000000000000000000000000&#39; THEN &#39;join&#39; --POT
+          WHEN topics[OFFSET(0)] = &#39;0x44e2a5a800000000000000000000000000000000000000000000000000000000&#39; THEN &#39;drip&#39; --JUG
+          WHEN topics[OFFSET(0)] = &#39;0xf37ac61c00000000000000000000000000000000000000000000000000000000&#39; THEN &#39;heal&#39; --VOW/VAT
+          WHEN topics[OFFSET(0)] = &#39;0xd7ee674b00000000000000000000000000000000000000000000000000000000&#39; THEN &#39;flog&#39; --VOW
+          WHEN topics[OFFSET(0)] = &#39;0xc959c42b00000000000000000000000000000000000000000000000000000000&#39; THEN &#39;deal&#39; --FLAPPER
+          WHEN topics[OFFSET(0)] = &#39;0xa3b22fc400000000000000000000000000000000000000000000000000000000&#39; THEN &#39;hope&#39; --VAT
+          WHEN topics[OFFSET(0)] = &#39;0xdc4d20fa00000000000000000000000000000000000000000000000000000000&#39; THEN &#39;nope&#39; --VAT
+          WHEN topics[OFFSET(0)] = &#39;0xbb35783b00000000000000000000000000000000000000000000000000000000&#39; THEN &#39;move&#39; --VAT
+          WHEN topics[OFFSET(0)] = &#39;0x7cdd3fde00000000000000000000000000000000000000000000000000000000&#39; THEN &#39;slip&#39; --VAT
+          WHEN topics[OFFSET(0)] = &#39;0x7bab3f4000000000000000000000000000000000000000000000000000000000&#39; THEN &#39;grab&#39; --VAT
+          WHEN topics[OFFSET(0)] = &#39;0xdfd7467e425a8107cfd368d159957692c25085aacbcf5228ce08f10f2146486e&#39; THEN &#39;poke&#39; --SPOT
+          WHEN topics[OFFSET(0)] = &#39;0x85258d09e1e4ef299ff3fc11e74af99563f022d21f3f940db982229dc2a3358c&#39; THEN &#39;bark&#39; --DOG
+          WHEN topics[OFFSET(0)] = &#39;0x54f095dc7308776bf01e8580e4dd40fd959ea4bf50b069975768320ef8d77d8a&#39; THEN &#39;digs&#39; --DOG
+          WHEN topics[OFFSET(0)] = &#39;0x7c5bfdc0a5e8192f6cd4972f382cec69116862fb62e6abff8003874c58e064b8&#39; THEN &#39;kick&#39; --CLIPPER
+          WHEN topics[OFFSET(0)] = &#39;0x05e309fd6ce72f2ab888a20056bb4210df08daed86f21f95053deb19964d86b1&#39; THEN &#39;take&#39; --CLIPPER
+          WHEN topics[OFFSET(0)] = &#39;0x0d7d75e01ab95780d3cd1c8ec0dd6c2ce19e3a20427eec8bf53283b6fb8e95f0&#39; THEN &#39;flashloan&#39; --FLASH
+          WHEN topics[OFFSET(0)] = &#39;0xcc16f5dbb4873280815c1ee09dbd06736cffcc184412cf7a71a0fdb75d397ca5&#39; THEN &#39;burn&#39; --MKR/DSTOKEN
+          WHEN topics[OFFSET(0)] = &#39;0x0f6798a560793a54c3bcfe86a93cde1e73087d944c0ea20544137d4121396885&#39; THEN &#39;mint&#39; --MKR/DSTOKEN
+          WHEN topics[OFFSET(0)] = &#39;0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef&#39; AND
+               topics[OFFSET(1)] = &#39;0x0a3f6849f78076aefadf113f5bed87720274ddc0&#39;                         THEN &#39;free&#39; --DSCHIEF
+          WHEN topics[OFFSET(0)] = &#39;0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef&#39; AND
+               topics[OFFSET(2)] = &#39;0x0a3f6849f78076aefadf113f5bed87720274ddc0&#39;                         THEN &#39;lock&#39; --DSCHIEF
+          WHEN topics[OFFSET(0)] = &#39;0x4f0892983790f53eea39a7a496f6cb40e8811b313871337b6a761efc6c67bb1f&#39; THEN &#39;etch&#39; --DSCHIEF(slate) 
+          WHEN topics[OFFSET(0)] IN (
+                                   &#39;0xa69beaba00000000000000000000000000000000000000000000000000000000&#39;,
+                                   &#39;0xed08132900000000000000000000000000000000000000000000000000000000&#39;
+                                   )                                                                    THEN &#39;vote&#39; --DSCHIEF
+          WHEN topics[OFFSET(0)] = &#39;0xd6be0bc178658a382ff4f91c8c68b542aa6b71685b8fe427966b87745c3ea7a2&#39; THEN &#39;open&#39; --CDPMANAGER
+          WHEN topics[OFFSET(0)] = &#39;0xfcafcc6800000000000000000000000000000000000000000000000000000000&#39; THEN &#39;give&#39; --CDPMANAGER
+          WHEN topics[OFFSET(0)] = &#39;0x45e6bdcd00000000000000000000000000000000000000000000000000000000&#39; THEN &#39;frob&#39; --CDPMANAGER
+          WHEN topics[OFFSET(0)] = &#39;0x9bb8f83800000000000000000000000000000000000000000000000000000000&#39; THEN &#39;flux&#39; --CDPMANAGER
+          WHEN topics[OFFSET(0)] = &#39;0xf9f30db600000000000000000000000000000000000000000000000000000000&#39; THEN &#39;move&#39; --CDPMANAGER
+          WHEN topics[OFFSET(0)] = &#39;0x1b0dbf7200000000000000000000000000000000000000000000000000000000&#39; THEN &#39;quit&#39; --CDPMANAGER
+               END AS makerdao_function,
+     CASE --note following are in hex string format (as the numbers are too big for... bigquery)
+          WHEN topics[OFFSET(0)] = &#39;0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef&#39; --transfer/burn/mint value
+               THEN data --wad (10e18)
+          WHEN topics[OFFSET(0)] = &#39;0x7f8661a100000000000000000000000000000000000000000000000000000000&#39; --pot/DSR exit value
+               THEN topics[OFFSET(2)] --wad
+          WHEN topics[OFFSET(0)] = &#39;0x049878f300000000000000000000000000000000000000000000000000000000&#39; --pot/DSR join value
+               THEN topics[OFFSET(3)] --wad
+          WHEN topics[OFFSET(0)] = &#39;0xbb35783b00000000000000000000000000000000000000000000000000000000&#39; --vat move value
+               THEN topics[OFFSET(2)] --rad (10e45)
+          WHEN topics[OFFSET(0)] = &#39;0xf37ac61c00000000000000000000000000000000000000000000000000000000&#39; --vow/vat heal amount
+               THEN topics[OFFSET(1)] --rad
+          WHEN topics[OFFSET(0)] = &#39;0x7cdd3fde00000000000000000000000000000000000000000000000000000000&#39; --vat slip amount
+               THEN topics[OFFSET(3)] --wad
+          WHEN topics[OFFSET(0)] = &#39;0x7bab3f4000000000000000000000000000000000000000000000000000000000&#39; --vat grab debt (dart) amount
+               THEN CONCAT(&#39;0x&#39;, SUBSTR(data, 459, 64)) --wad
+          WHEN topics[OFFSET(0)] = &#39;0x85258d09e1e4ef299ff3fc11e74af99563f022d21f3f940db982229dc2a3358c&#39; --dog bark liquidation (art)
+               THEN CONCAT(&#39;0x&#39;, SUBSTR(data, 67, 64)) --wad
+          WHEN topics[OFFSET(0)] = &#39;0x7c5bfdc0a5e8192f6cd4972f382cec69116862fb62e6abff8003874c58e064b8&#39; --clipper kick DAI debt (tab) 
+               THEN CONCAT(&#39;0x&#39;, SUBSTR(data, 67, 64)) --rad
+          WHEN topics[OFFSET(0)] = &#39;0x05e309fd6ce72f2ab888a20056bb4210df08daed86f21f95053deb19964d86b1&#39; --clipper take bid (price) 
+               THEN CONCAT(&#39;0x&#39;, SUBSTR(data, 67, 64)) --ray (10e27)
+          WHEN topics[OFFSET(0)] = &#39;0x0d7d75e01ab95780d3cd1c8ec0dd6c2ce19e3a20427eec8bf53283b6fb8e95f0&#39; --flashloan loan value (amount)
+               THEN CONCAT(&#39;0x&#39;, SUBSTR(data, 67, 64)) --ray
+          WHEN topics[OFFSET(0)] = &#39;0xcc16f5dbb4873280815c1ee09dbd06736cffcc184412cf7a71a0fdb75d397ca5&#39; --MKR/DSTOKEN burn value
+               THEN data --wad
+          WHEN topics[OFFSET(0)] = &#39;0x0f6798a560793a54c3bcfe86a93cde1e73087d944c0ea20544137d4121396885&#39; --MKR/DSTOKEN mint value
+               THEN data --wad
+          WHEN topics[OFFSET(0)] = &#39;0x45e6bdcd00000000000000000000000000000000000000000000000000000000&#39; --CDPMANAGER frob debt change
+               THEN CONCAT(&#39;0x&#39;, SUBSTR(data, 267, 64)) --wad (assuming dart value of similar percision across contracts)
+          WHEN topics[OFFSET(0)] = &#39;0x9bb8f83800000000000000000000000000000000000000000000000000000000&#39; --CDPMANAGER flux collateral
+               THEN CONCAT(&#39;0x&#39;, SUBSTR(data, 203, 64)) --wad
+          WHEN topics[OFFSET(0)] = &#39;0xf9f30db600000000000000000000000000000000000000000000000000000000&#39; --CDPMANAGER move value
+               THEN CONCAT(&#39;0x&#39;, SUBSTR(data, 267, 64)) --rad
+                    END AS value,
+     CASE
+          WHEN topics[OFFSET(0)] = &#39;0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef&#39; --transfer/burn/mint
+               THEN CONCAT(&#39;0x&#39;, SUBSTR(topics[OFFSET(1)], 27, 40)) --remove zero padding
+          WHEN topics[OFFSET(0)] = &#39;0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925&#39; --approve
+               THEN CONCAT(&#39;0x&#39;, SUBSTR(topics[OFFSET(1)], 27, 40)) --remove zero padding
+          WHEN topics[OFFSET(0)] = &#39;0x9f678cca00000000000000000000000000000000000000000000000000000000&#39; --drip
+               THEN CONCAT(&#39;0x&#39;, SUBSTR(topics[OFFSET(1)], 27, 40)) --remove zero padding
+          WHEN topics[OFFSET(0)] = &#39;0x7f8661a100000000000000000000000000000000000000000000000000000000&#39; --exit
+               THEN CONCAT(&#39;0x&#39;, SUBSTR(topics[OFFSET(1)], 27, 40)) --remove zero padding
+          WHEN topics[OFFSET(0)] = &#39;0x049878f300000000000000000000000000000000000000000000000000000000&#39; --join
+               THEN CONCAT(&#39;0x&#39;, SUBSTR(topics[OFFSET(1)], 27, 40)) --remove zero padding
+          WHEN topics[OFFSET(0)] = &#39;0x44e2a5a800000000000000000000000000000000000000000000000000000000&#39; --drip
+               THEN CONCAT(&#39;0x&#39;, SUBSTR(topics[OFFSET(1)], 27, 40)) --remove zero padding
+          WHEN topics[OFFSET(0)] = &#39;0xf37ac61c00000000000000000000000000000000000000000000000000000000&#39; --heal
+               THEN CONCAT(&#39;0x&#39;, SUBSTR(topics[OFFSET(1)], 27, 40)) --remove zero padding
+          WHEN topics[OFFSET(0)] = &#39;0xd7ee674b00000000000000000000000000000000000000000000000000000000&#39; --flog
+               THEN CONCAT(&#39;0x&#39;, SUBSTR(topics[OFFSET(1)], 27, 40)) --remove zero padding
+          WHEN topics[OFFSET(0)] = &#39;0xc959c42b00000000000000000000000000000000000000000000000000000000&#39; --deal
+               THEN CONCAT(&#39;0x&#39;, SUBSTR(topics[OFFSET(1)], 27, 40)) --remove zero padding
+          WHEN topics[OFFSET(0)] = &#39;0xa3b22fc400000000000000000000000000000000000000000000000000000000&#39; --hope
+               THEN CONCAT(&#39;0x&#39;, SUBSTR(topics[OFFSET(1)], 27, 40)) --remove zero padding
+          WHEN topics[OFFSET(0)] = &#39;0xdc4d20fa00000000000000000000000000000000000000000000000000000000&#39; --nope
+               THEN CONCAT(&#39;0x&#39;, SUBSTR(topics[OFFSET(1)], 27, 40)) --remove zero padding
+          WHEN topics[OFFSET(0)] = &#39;0xbb35783b00000000000000000000000000000000000000000000000000000000&#39; --move(vat)
+               THEN CONCAT(&#39;0x&#39;, SUBSTR(topics[OFFSET(1)], 27, 40)) --remove zero padding
+          WHEN topics[OFFSET(0)] = &#39;0x7bab3f4000000000000000000000000000000000000000000000000000000000&#39; --grab (u; user liquidated)
+               THEN CONCAT(&#39;0x&#39;, SUBSTR(topics[OFFSET(2)], 27, 40)) --remove zero padding
+          WHEN topics[OFFSET(0)] = &#39;0x85258d09e1e4ef299ff3fc11e74af99563f022d21f3f940db982229dc2a3358c&#39; --bark (urn liquidated)
+               THEN CONCAT(&#39;0x&#39;, SUBSTR(topics[OFFSET(2)], 27, 40)) --remove zero padding
+          WHEN topics[OFFSET(0)] = &#39;0x7c5bfdc0a5e8192f6cd4972f382cec69116862fb62e6abff8003874c58e064b8&#39; --kick (auction id)
+               THEN SAFE_CAST(SAFE_CAST(topics[OFFSET(1)] AS INT64) AS STRING)
+          WHEN topics[OFFSET(0)] = &#39;0x05e309fd6ce72f2ab888a20056bb4210df08daed86f21f95053deb19964d86b1&#39; --take (who; auction bidder)
+               THEN CONCAT(&#39;0x&#39;, SUBSTR(topics[OFFSET(2)], 27, 40)) --remove zero padding
+          WHEN topics[OFFSET(0)] = &#39;0x0d7d75e01ab95780d3cd1c8ec0dd6c2ce19e3a20427eec8bf53283b6fb8e95f0&#39; --flashloan (reciever)
+               THEN CONCAT(&#39;0x&#39;, SUBSTR(topics[OFFSET(1)], 27, 40)) --remove zero padding
+          WHEN topics[OFFSET(0)] = &#39;0xcc16f5dbb4873280815c1ee09dbd06736cffcc184412cf7a71a0fdb75d397ca5&#39; --burn (DSTOKEN)
+               THEN CONCAT(&#39;0x&#39;, SUBSTR(topics[OFFSET(1)], 27, 40)) --remove zero padding
+          WHEN topics[OFFSET(0)] = &#39;0xa69beaba00000000000000000000000000000000000000000000000000000000&#39; --vote
+               THEN CONCAT(&#39;0x&#39;, SUBSTR(topics[OFFSET(1)], 27, 40)) --remove zero padding
+          WHEN topics[OFFSET(0)] = &#39;0xd6be0bc178658a382ff4f91c8c68b542aa6b71685b8fe427966b87745c3ea7a2&#39; --open
+               THEN CONCAT(&#39;0x&#39;, SUBSTR(topics[OFFSET(1)], 27, 40)) --remove zero padding
+          WHEN topics[OFFSET(0)] = &#39;0xfcafcc6800000000000000000000000000000000000000000000000000000000&#39; --give (cdp id)
+               THEN topics[OFFSET(2)]
+          WHEN topics[OFFSET(0)] = &#39;0x45e6bdcd00000000000000000000000000000000000000000000000000000000&#39; --frob
+               THEN CONCAT(&#39;0x&#39;, SUBSTR(topics[OFFSET(1)], 27, 40)) --remove zero padding
+          WHEN topics[OFFSET(0)] = &#39;0x9bb8f83800000000000000000000000000000000000000000000000000000000&#39; --flux (cpd id)
+               THEN topics[OFFSET(2)]
+          WHEN topics[OFFSET(0)] = &#39;0xf9f30db600000000000000000000000000000000000000000000000000000000&#39; --move (cdp id)
+               THEN topics[OFFSET(2)]
+          WHEN topics[OFFSET(0)] = &#39;0x1b0dbf7200000000000000000000000000000000000000000000000000000000&#39; --quit (cdp id)
+               THEN topics[OFFSET(2)]
+                    END AS sender,
+     CASE
+          WHEN topics[OFFSET(0)] = &#39;0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef&#39; --transfer/burn/mint
+               THEN CONCAT(&#39;0x&#39;, SUBSTR(topics[OFFSET(2)], 27, 40)) --remove zero padding
+          WHEN topics[OFFSET(0)] = &#39;0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925&#39; --approve
+               THEN CONCAT(&#39;0x&#39;, SUBSTR(topics[OFFSET(2)], 27, 40)) --remove zero padding
+          WHEN topics[OFFSET(0)] = &#39;0xbb35783b00000000000000000000000000000000000000000000000000000000&#39; --move(vat)
+               THEN CONCAT(&#39;0x&#39;, SUBSTR(topics[OFFSET(2)], 27, 40)) --remove zero padding
+          WHEN topics[OFFSET(0)] = &#39;0x7cdd3fde00000000000000000000000000000000000000000000000000000000&#39; --slip(vat)
+               THEN CONCAT(&#39;0x&#39;, SUBSTR(topics[OFFSET(2)], 27, 40)) --remove zero padding
+          WHEN topics[OFFSET(0)] = &#39;0x7bab3f4000000000000000000000000000000000000000000000000000000000&#39; --grab (w; user recieving debt)
+               THEN CONCAT(&#39;0x&#39;, SUBSTR(data, 355, 40)) --retrieve address from data (not logged)
+          WHEN topics[OFFSET(0)] = &#39;0x85258d09e1e4ef299ff3fc11e74af99563f022d21f3f940db982229dc2a3358c&#39; --bark (auction id)
+               THEN SAFE_CAST(SAFE_CAST(topics[OFFSET(3)] AS INT64) AS STRING)
+          WHEN topics[OFFSET(0)] = &#39;0x7c5bfdc0a5e8192f6cd4972f382cec69116862fb62e6abff8003874c58e064b8&#39; --kick (kpr of dai incentive)
+               THEN CONCAT(&#39;0x&#39;, SUBSTR(topics[OFFSET(3)], 27, 40)) --remove zero padding
+          WHEN topics[OFFSET(0)] = &#39;0x05e309fd6ce72f2ab888a20056bb4210df08daed86f21f95053deb19964d86b1&#39; --take (auction id)
+               THEN SAFE_CAST(SAFE_CAST(topics[OFFSET(1)] AS INT64) AS STRING)
+          WHEN topics[OFFSET(0)] = &#39;0x0d7d75e01ab95780d3cd1c8ec0dd6c2ce19e3a20427eec8bf53283b6fb8e95f0&#39; --flashloan (token)
+               THEN CONCAT(&#39;0x&#39;, SUBSTR(data, 27, 40)) --remove zero padding
+          WHEN topics[OFFSET(0)] = &#39;0x0f6798a560793a54c3bcfe86a93cde1e73087d944c0ea20544137d4121396885&#39; --mint (DSTOKEN)
+               THEN CONCAT(&#39;0x&#39;, SUBSTR(topics[OFFSET(1)], 27, 40)) --remove zero padding
+          WHEN topics[OFFSET(0)] = &#39;0x4f0892983790f53eea39a7a496f6cb40e8811b313871337b6a761efc6c67bb1f&#39; --etch
+               THEN topics[OFFSET(1)]
+          WHEN topics[OFFSET(0)] = &#39;0xa69beaba00000000000000000000000000000000000000000000000000000000&#39; --vote (slate)
+               THEN topics[OFFSET(2)]
+          WHEN topics[OFFSET(0)] = &#39;0xd6be0bc178658a382ff4f91c8c68b542aa6b71685b8fe427966b87745c3ea7a2&#39; --open (cdp id)
+               THEN topics[OFFSET(3)]
+          WHEN topics[OFFSET(0)] = &#39;0xfcafcc6800000000000000000000000000000000000000000000000000000000&#39; --give (dst address)
+               THEN CONCAT(&#39;0x&#39;, SUBSTR(topics[OFFSET(1)], 27, 40)) --remove zero padding
+          WHEN topics[OFFSET(0)] = &#39;0x45e6bdcd00000000000000000000000000000000000000000000000000000000&#39; --frob (affected cdp)
+               THEN topics[OFFSET(2)]
+          WHEN topics[OFFSET(0)] = &#39;0x9bb8f83800000000000000000000000000000000000000000000000000000000&#39; --flux (dst)
+               THEN CONCAT(&#39;0x&#39;, SUBSTR(topics[OFFSET(3)], 27, 40)) --remove zero padding
+          WHEN topics[OFFSET(0)] = &#39;0xf9f30db600000000000000000000000000000000000000000000000000000000&#39; --move (dst)
+               THEN CONCAT(&#39;0x&#39;, SUBSTR(topics[OFFSET(3)], 27, 40)) --remove zero padding
+          WHEN topics[OFFSET(0)] = &#39;0x1b0dbf7200000000000000000000000000000000000000000000000000000000&#39; --quit (dst)
+               THEN CONCAT(&#39;0x&#39;, SUBSTR(topics[OFFSET(3)], 27, 40)) --remove zero padding
+                    END AS reciever,
+     CASE WHEN topics[OFFSET(0)] IN (&#39;0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef&#39;,
+                                     &#39;0x7f8661a100000000000000000000000000000000000000000000000000000000&#39;,
+                                     &#39;0x049878f300000000000000000000000000000000000000000000000000000000&#39;,
+                                     &#39;0x7cdd3fde00000000000000000000000000000000000000000000000000000000&#39;,
+                                     &#39;0x7bab3f4000000000000000000000000000000000000000000000000000000000&#39;,
+                                     &#39;0x85258d09e1e4ef299ff3fc11e74af99563f022d21f3f940db982229dc2a3358c&#39;,
+                                     &#39;0xcc16f5dbb4873280815c1ee09dbd06736cffcc184412cf7a71a0fdb75d397ca5&#39;,
+                                     &#39;0x0f6798a560793a54c3bcfe86a93cde1e73087d944c0ea20544137d4121396885&#39;,
+                                     &#39;0x45e6bdcd00000000000000000000000000000000000000000000000000000000&#39;,
+                                     &#39;0x9bb8f83800000000000000000000000000000000000000000000000000000000&#39;
+                                   )
+               THEN &#39;wad&#39;
+          WHEN topics[OFFSET(0)] IN (&#39;0x05e309fd6ce72f2ab888a20056bb4210df08daed86f21f95053deb19964d86b1&#39;,
+                                     &#39;0x0d7d75e01ab95780d3cd1c8ec0dd6c2ce19e3a20427eec8bf53283b6fb8e95f0&#39;
+                                   )
+               THEN &#39;ray&#39;
+          WHEN topics[OFFSET(0)] IN (&#39;0xbb35783b00000000000000000000000000000000000000000000000000000000&#39;,
+                                     &#39;0xf37ac61c00000000000000000000000000000000000000000000000000000000&#39;,
+                                     &#39;0x7c5bfdc0a5e8192f6cd4972f382cec69116862fb62e6abff8003874c58e064b8&#39;,
+                                     &#39;0xf9f30db600000000000000000000000000000000000000000000000000000000&#39;
+                                   )
+               THEN &#39;rad&#39;
+                    END AS percision, --see value section
+     topics,
+     data
+FROM bigquery-public-data.crypto_ethereum.logs AS logs
+RIGHT JOIN bigquery-public-data.crypto_ethereum.transactions AS transactions
+     ON logs.transaction_hash = transactions.hash
+WHERE logs.block_timestamp BETWEEN &#39;2021-05-30&#39; and &#39;2022-05-30&#39;
+     AND address IN (
+     &#39;0x6b175474e89094c44da98b954eedeac495271d0f&#39;, -- DAI address (ERC20 form)
+     &#39;0x9759A6Ac90977b93B58547b4A71c78317f391A28&#39;, -- DAIJOIN address (mint/burn)
+     &#39;0x2F0b23f53734252Bda2277357e97e1517d6B042A&#39;, -- GEMJOIN address (collateral)
+     &#39;0x197E90f9FAD81970bA7976f33CbD77088E5D7cf7&#39;, -- POT address (savings contract)
+     &#39;0x19c0976f590D67707E62397C87829d896Dc0f1F1&#39;, -- JUG address (stability fees)
+     &#39;0xA950524441892A31ebddF91d3cEEFa04Bf454466&#39;, -- VOW address (balance sheet)
+     &#39;0xC4269cC7acDEdC3794b221aA4D9205F564e27f0d&#39;, -- FLAPPER address (surplus)
+     &#39;0xA41B6EF151E06da0e34B009B86E828308986736D&#39;, -- FLOPPER address (deficit - never been called thus far)
+     &#39;0x35D1b3F3D7966A1DFe207aa4514C12a259A0492B&#39;, -- VAT address (vaults)
+     &#39;0x135954d155898D42C90D2a57824C690e0c7BEf1B&#39;, -- DOG address (liquidations)
+     &#39;0xc67963a226eddd77B91aD8c421630A1b0AdFF270&#39;, -- CLIPPER address (liquidations)
+     &#39;0x1EB4CF3A948E7D72A198fe073cCb8C7a948cD853&#39;, -- FLASH address (flash loans)
+     &#39;0x9f8F72aA9304c8B593d555F12eF6589cC3A579A2&#39;, -- MKR address (governance ERC20)
+     &#39;0x0a3f6849f78076aefaDf113F5BED87720274dDC0&#39;, -- DSCHIEF address (governance voting system)
+     &#39;0xA618E54de493ec29432EbD2CA7f14eFbF6Ac17F7&#39;, -- DSTOKEN address (governance IOU)
+     &#39;0x82ecD135Dce65Fbc6DbdD0e4237E0AF93FFD5038&#39;, -- PROXY address (for proxy actions)
+     &#39;0x5ef30b9986345249bc32d8928B7ee64DE9435E39&#39;  -- CDPMANAGER address (for managing vaults)
+     )
+
+)
+</code></pre>
+</div>
+<div id="references" class="section level2">
+<h2>References</h2>
+<p>MakerDAO (2021). MakerDAO Technical Docs. URL <a href="https://docs.makerdao.com/" class="uri">https://docs.makerdao.com/</a></p>
+<p>Google (2021). BigQuery. URL <a href="https://cloud.google.com/bigquery" class="uri">https://cloud.google.com/bigquery</a></p>
+</div>

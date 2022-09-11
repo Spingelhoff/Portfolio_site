@@ -1,0 +1,250 @@
+baseURL: "https://hugo-profile.netlify.app"
+languageCode: "en-us"
+title: "Victor's Portfolio"
+theme: "hugo-profile"
+
+Paginate: 3
+disqusShortname:
+googleAnalytics:
+
+markup:
+  goldmark:
+    renderer:
+      unsafe: true
+
+Menus:
+  main:
+    - identifier: Reports
+      name: Reports
+      title: Reports
+      url: /post
+      weight: 1
+
+    #Dropdown menu
+    # - identifier: dropdown
+    #   title: Example dropdown menu
+    #   name: Dropdown
+    #   weight: 3
+    # - identifier: dropdown1
+    #   title: example dropdown 1
+    #   name: example 1
+    #   url: /#
+    #   parent: dropdown
+    #   weight: 1
+    # - identifier: dropdown2
+    #   title: example dropdown 2
+    #   name: example 2
+    #   url: /#
+    #   parent: dropdown
+    #   weight: 2
+
+params:
+  title: "My Portfolio"
+  description:
+  # staticPath: ""  # The path to serve the static files from
+  favicon: "/favicon.png"
+
+  # Whether to serve bootstrap css and js files from CDN or not. Can be set to true, "css" or "js" to choose between
+  # serving both, only the css, or only the js files through the CDN. Any other value will make so that CDN is not used.
+  # Note the lack of "" in true, it should be of boolean type.
+  useBootstrapCDN: false
+
+  theme:
+    disableThemeToggle: false
+    # defaultTheme: "light" # dark
+
+  # font:
+  #   fontSize: 1.5rem # default: 1rem
+  #   fontWeight: 500 # default: 400
+  #   lineHeight: 1 # default: 1.5
+  #   textAlign: right # default: left
+
+  # color preference
+  # color:
+  #   textColor:
+  #   secondaryTextColor:
+  #   backgroundColor:
+  #   secondaryBackgroundColor:
+  #   primaryColor:
+  #   secondaryColor:
+
+  #   darkmode:
+  #     textColor:
+  #     secondaryTextColor:
+  #     backgroundColor:
+  #     secondaryBackgroundColor:
+  #     primaryColor:
+  #     secondaryColor:
+
+  # If you want to customize the menu, you can change it here
+  navbar:
+  #   align: mx-auto # Left: ms-auto | center: mx-auto | right: me-auto | Default: ms-auto
+  #   brandLogo: "/logo.png" # Logo for the brand | default is the favicon variable
+  #   brandName: "Profile" # Brand name for the brand | default is the title variable
+
+    menus:
+      disableAbout: false
+      disableExperience: false
+      disableEducation: false
+      disableProjects: false
+      disableAchievements: true
+      disableContact: false
+
+  # Hero
+  hero:
+    enable: true
+    intro: "Hello, my name is"
+    title: "Victor Lao"
+    subtitle: "I like to wrangle and visualize data"
+    content: "A researcher at heart, I love to analyze and explore interesting datasets. I am passionate about learning new ways to pursue research based hypotheses."
+    image: /images/ProfilePic.jpg
+    button:
+      enable: true
+      name: "Resume"
+      url: /cirriculum_vitae/Cirriculum-Vitae.pdf
+      download: true 
+    socialLinks:
+      fontAwesomeIcons:
+        - icon: fab fa-github
+          url: https://github.com/Spingelhoff
+        - icon: fab fa-linkedin
+          url: https://linkedin.com/in/victor-lao-3827ba196
+
+  # About
+  about:
+    enable: true
+    title: "About Me"
+    image: "/images/ProfilePic.jpg"
+    content: |-
+      I am a data enthusiast who always enjoys an opportunity to improve my analytical skills. My background is in cell and systems biology which gave me a passion for learning and a need to find answers to novel questions.
+
+      I am currently looking for a job that allows me to thrive as an analyst while challenging me to know more.
+    skills:
+      enable: true
+      title: "These are the skills I bring:"
+      items:
+        - "R"
+        - "SQL"
+        - "Excel"
+        - "Data Visualization"
+        - "Literature Review"
+        - "Scientific Writing"
+
+  # Experience
+  experience:
+    enable: true
+    # title: "Custom Name"
+    items:
+      - job: "Research Assistant"
+        company: "Saltzman Lab"
+        companyUrl: "https://sites.google.com/view/saltzmanlab"
+        date: "2021"
+        featuredLink:
+          enable: false
+          url: "https://example.com"
+        info:
+          enable: false
+        content: "I studied the role of histone binding proteins in RNAi and chromatin pathways pertaining to fertility. I gathered and analyzed experimental data and distilled it to a general audience."
+      - job: "Private Tutor"
+        company: "Self-Employed"
+        companyUrl:
+        date: "2020-2021"
+        featuredLink:
+          enable: false
+          url: "https://example.com"
+        info:
+          enable: false
+        content: "I formed unique cirriculum for each client and work with them to achieve their academic goals."
+
+      - job: "Teaching Assistant"
+        company: "University of Toronto"
+        companyUrl: 
+        date: "2018-2020"
+        info:
+          enable: false
+        featuredLink:
+          enable: false
+          url: "https://example.com"
+        content: "I supervised laboratory courses and held office hours to aid students in understanding class concepts."
+
+  # Education
+  education:
+    enable: true
+    # title: "Custom Name"
+    # index: true
+    items:
+      - title: "Master of Cell and Systems Biology"
+        school:
+          name: "University of Toronto, St. George"
+          url: "https://example.org"
+        date: "2018 - 2021"
+        GPA:
+        content: "Thesis: Investigation of Chromodomain Proteins, CEC-3 and CEC-6, in Maintenance of Germline Immortality."
+      - title: "Honours Bachelor of Science"
+        school:
+          name: "University of Toronto, St. George"
+          url: "https://example.org"
+        date: "2014 - 2018"
+        GPA:
+        content: "Double major in Human Biology and Cell and Systems Biology."
+        featuredLink:
+          enable: false
+          name: "My academic record"
+          url: "https://example.com"
+
+  # Achievements
+  achievements:
+    enable: false
+    # title: "Custom Name"
+    items:
+      - title: Google kickstart runner
+        content: I solved all problems with optimal solution.
+        url: https://example.com
+      - title: Facebook Hackathon Winner
+        content: Developed a product using Artificial Intelligence.
+      - title: Hugo Profile
+        content: Developed a theme and getting 1K+ downloads per month.
+        url: "https://github.com/gurusabarish/hugo-profile"
+      - title: Microsoft Imagine Runner
+        content: We are developed a product which can help others.
+      - title: Google Summer of Code
+        content: Contributed to a open source project.
+        url: https://example.com
+
+  # projects
+  projects:
+    enable: true
+    title: "Projects (See Reports Section for More)"
+    items:
+      - title: Network Mapping the Most Influential Addresses using DAI (2021)
+        content: I extract all DAI specific transfers of value and map influential addresses in an interactive network using ggraph and visNetwork to investigate key actors in the DAI ecosystem.
+        image: /images/projects/DAI_Networkmap.png
+        links:
+          - icon: fab fa-github
+            url: https://github.com/Spingelhoff/MakerDAO_Events_2021-2022
+            
+      - title: World Trade Organization Export Map (2021)
+        content: In order to clarify the current state of global markets, data was retrieved from the World Trade Organization stats portal for exports by partner economies in 2021 and visualized on a map using leaflet.
+        image: /images/projects/WTO_Exportmap.png
+        links:
+          - icon: fab fa-github
+            url: https://github.com/Spingelhoff/WTO_Export_Map
+
+      - title: Thesis Reimagined - Heatmap of Literature Review
+        content: To improve on a past figure, I created an interactive heatmap outlining the results of a literature review for mutants displaying a somatic or germlinet transgene silencing phenotype in C. elegans.
+        image: /images/projects/THESIS_Heatmap.png
+        links:
+          - icon: fab fa-github
+            url: https://github.com/Spingelhoff/Thesis_Reimagined
+
+
+  #Contact
+  contact:
+    enable: true
+    #title: "Custom name"
+    content: Please feel free to reach out for more information. 
+    email: victorlelao@gmail.com
+    btnName: E-mail me
+    
+  footer:
+    recentPosts: false
