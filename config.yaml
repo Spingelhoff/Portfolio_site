@@ -177,16 +177,16 @@ params:
         school:
           name: "University of Toronto, St. George"
           url: "https://example.org"
-        date: "2018 - 2021"
+        date: "2018 - 2020"
         GPA:
-        content: "Thesis: Investigation of Chromodomain Proteins, CEC-3 and CEC-6, in Maintenance of Germline Immortality."
+        content: "Thesis: Investigation of Chromodomain Proteins, CEC-3 and CEC-6, in Maintenance of Germline Immortality"
       - title: "Honours Bachelor of Science"
         school:
           name: "University of Toronto, St. George"
           url: "https://example.org"
         date: "2014 - 2018"
         GPA:
-        content: "Double major in Human Biology and Cell and Systems Biology."
+        content: "Double Major in Human Biology and Cell and Systems Biology"
         featuredLink:
           enable: false
           name: "My academic record"
