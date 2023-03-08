@@ -95,7 +95,7 @@ params:
     enable: true
     intro: "Hello, my name is"
     title: "Victor Lao"
-    subtitle: "Data Specialist | Researcher | Analyst"
+    subtitle: "Data Specialist | Researcher"
     content: "A researcher at heart, I love to analyze and explore interesting datasets. I am passionate about learning new ways to pursue research based hypotheses."
     image: /images/ProfilePic.jpg
     button:
