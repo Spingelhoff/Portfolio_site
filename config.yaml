@@ -242,7 +242,7 @@ params:
           link: https://szys2b-victor-lao.shinyapps.io/revenue_data_exploration_tool_demo/
         links:
           - icon: fab fa-github
-            url: https://github.com/Spingelhoff/MakerDAO_Events_2021-2022
+            url: https://github.com/Spingelhoff/revenue_data_exploration_tool
             
       - title: Network Mapping the Most Influential Addresses using DAI (2021)
         content: I extract all DAI specific transfers of value and map influential addresses in an interactive network using ggraph and visNetwork to investigate key actors in the DAI ecosystem.
