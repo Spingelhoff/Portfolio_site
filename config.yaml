@@ -101,7 +101,7 @@ params:
     button:
       enable: true
       name: "Resume"
-      url: /cirriculum_vitae/Cirriculum-Vitae.pdf
+      url: /cirriculum_vitae/Resume.pdf
       download: true 
     socialLinks:
       fontAwesomeIcons:
@@ -116,9 +116,15 @@ params:
     title: "About Me"
     image: "/images/AboutPic.jpg"
     content: |-
-      I am a data enthusiast who always enjoys an opportunity to improve my analytical skills. My background is in cell and systems biology which gave me a passion for learning and a need to find answers to novel questions. I am proud to be self taught in the data analytics tools I use today which, I believe is a testament to my drive and adaptability.
-
-      I am currently looking for a job that allows me to thrive as an analyst while challenging me to know more.
+      I am a cell and systems biologist, by training, that fell in love with
+      data. The utility, scope and speed of analytical processes today were 
+      dazzling which led to a career pivot to get closer to the action.
+      
+      I have always had a passion for learning and finding answers to novel 
+      questions which has pushed me to continously improve my analytical 
+      skills. I am proud to be self taught in the data analytics tools I use 
+      today which, I believe is a testament to my drive and adaptability.
+      
     skills:
       enable: true
       title: "These are the skills I bring:"
@@ -135,6 +141,17 @@ params:
     enable: true
     # title: "Custom Name"
     items:
+      - job: "Data Specialist"
+        company: "Guillevin International"
+        companyUrl: "https://https://www.guillevin.com/"
+        date: "2022-2023"
+        featuredLink:
+          enable: false
+          url: "https://example.com"
+        info:
+          enable: false
+        content: "I helped to ease the transition into the new ERP system by helping to establish data protocols with clear documentation to ensure operation consistency. I also reported on and managed the pricing matrices for all branches in the Ontario region."
+      
       - job: "Research Assistant"
         company: "Saltzman Lab"
         companyUrl: "https://sites.google.com/view/saltzmanlab"
@@ -145,6 +162,7 @@ params:
         info:
           enable: false
         content: "I studied the role of histone binding proteins in RNAi and chromatin pathways pertaining to fertility. I gathered and analyzed experimental data and distilled it to a general audience."
+      
       - job: "Private Tutor"
         company: "Self-Employed"
         companyUrl:
@@ -216,6 +234,16 @@ params:
     enable: true
     title: "Projects (See Reports Section for More Details)"
     items:
+      - title: Creating a Data Exploration Tool for Revenue Data (2023)
+        content: To demo the benefits of R and shiny I created a quick demo app that could also be deployed as a desktop application.
+        image: /images/projects/Revenue_Data_App_Demo.png
+        featured:
+          name: Demo
+          link: https://szys2b-victor-lao.shinyapps.io/revenue_data_exploration_tool_demo/
+        links:
+          - icon: fab fa-github
+            url: https://github.com/Spingelhoff/MakerDAO_Events_2021-2022
+            
       - title: Network Mapping the Most Influential Addresses using DAI (2021)
         content: I extract all DAI specific transfers of value and map influential addresses in an interactive network using ggraph and visNetwork to investigate key actors in the DAI ecosystem.
         image: /images/projects/DAI_Networkmap.png
@@ -229,14 +257,6 @@ params:
         links:
           - icon: fab fa-github
             url: https://github.com/Spingelhoff/WTO_Export_Map
-
-      - title: Thesis Reimagined - Heatmap of Literature Review
-        content: To improve on a past figure, I created an interactive heatmap outlining the results of a literature review for mutants displaying a somatic or germline transgene silencing phenotype in C. elegans.
-        image: /images/projects/THESIS_Heatmap.png
-        links:
-          - icon: fab fa-github
-            url: https://github.com/Spingelhoff/Thesis_Reimagined
-
 
   #Contact
   contact:
