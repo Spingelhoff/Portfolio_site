@@ -238,7 +238,7 @@ params:
         content: To demo the benefits of R and shiny I created a quick demo app that could also be deployed as a desktop application.
         image: /images/projects/Revenue_Data_App_Demo.png
         featured:
-          name: Demo
+          name: Demo (Not Mobile Friendly)
           link: https://szys2b-victor-lao.shinyapps.io/revenue_data_exploration_tool_demo/
         links:
           - icon: fab fa-github
